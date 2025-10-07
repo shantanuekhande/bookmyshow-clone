@@ -29,7 +29,7 @@ class Location(models.Model):# ---------------------------- System/Admin
 
     def __str__(self):
         return self.name
-4
+
 
 class Theatre(models.Model):# ---------------------------- System/Admin
     name = models.CharField(max_length=100)
@@ -149,7 +149,72 @@ class Booking(models.Model):
     show = models.ForeignKey(Show, on_delete=models.CASCADE)
     booking_time = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=10, choices=Booking_Status.choices)
-    seats = models.ManyToManyField('Show_Seat')
+    # seats = models.ManyToManyField('Show_Seat') # many reference suggest many to many relationship , but i couldn't understand why thats the reason i used ForeignKey
+    seat = models.ForeignKey(Show_Seat, on_delete=models.CASCADE)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
 
     def __str__(self):
         return f"Booking {self.id} by {self.user.username} for {self.show.movie_name.title}"
+
+
+class Payment_Method(models.TextChoices):
+    CREDIT_CARD = 'credit_card', 'Credit Card'
+    DEBIT_CARD = 'debit_card', 'Debit Card'
+    NET_BANKING = 'net_banking', 'Net Banking'
+    UPI = 'upi', 'UPI'
+    WALLET = 'wallet', 'Wallet'
+    CASH = 'cash', 'Cash'
+
+class Payment_Status(models.TextChoices):
+    PENDING = 'pending', 'Pending'
+    COMPLETED = 'completed', 'Completed'
+    FAILED = 'failed', 'Failed'
+    REFUNDED = 'refunded', 'Refunded'
+
+class Payment(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    payment_time = models.DateTimeField(auto_now_add=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, choices=Payment_Method.choices)
+    status = models.CharField(max_length=10, choices=Payment_Status.choices)
+
+    def __str__(self):
+        return f"Payment {self.id} for Booking {self.booking.id}"
+
+class Bill(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    tax = models.DecimalField(max_digits=10, decimal_places=2)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Bill {self.id} for Booking {self.booking.id}"
+
+class Ticket(models.Model):
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE)
+    issue_time = models.DateTimeField(auto_now_add=True)
+    # qr_code = models.CharField(max_length=100)  # In real scenario, this could be an image or a file
+    seat = models.ForeignKey(Show_Seat, on_delete=models.CASCADE)
+    show = models.ForeignKey(Show, on_delete=models.CASCADE)
+    theatre = models.ForeignKey(Theatre, on_delete=models.CASCADE)
+    screen = models.ForeignKey(Screen, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movies, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=10, choices=Booking_Status.choices)
+    # def generate_qr_code(self):
+    #     # Placeholder for QR code generation logic
+    #     return f"QR-{self.id}"
+    # qr_code = models.CharField(max_length=100, default=generate_qr_code)
+    # def save(self, *args, **kwargs):
+    #     if not self.qr_code:
+    #         self.qr_code = self.generate_qr_code()
+    #     super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return f"Ticket {self.id} for Booking {self.booking.id}"
+
+
+

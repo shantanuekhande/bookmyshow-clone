@@ -1,0 +1,2 @@
+1. In the booking model, should we use a ManyToManyField for seats or a ForeignKey?  many reference suggest using ManyToManyField but I think ForeignKey is better because a booking is for a specific seat in a specific show.
+2. how to design partial payments in the booking model?
