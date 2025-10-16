@@ -13,6 +13,8 @@ class UserService:
             raise ValueError("User with this email already exists")
 
         # create role object
+        role  = role.lower()
+        # Step 2: validate role
         if role == 'admin':
             role = Role.ADMIN
         elif role == 'customer':
